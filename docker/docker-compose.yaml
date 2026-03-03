@@ -18,6 +18,7 @@ services:
     image: postgres:14.3
     ports:
       - "5432:5432"
+      - "5173:5173"
     volumes:
       - "../database/create.sql:/docker-entrypoint-initdb.d/init.sql"
     environment:
