@@ -4,10 +4,12 @@ services:
   backend:
     build:
       context: .
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
       - ../:/app
     ports:
       - "3000:3000"
+      - "5173:5173"
     working_dir: /app
     command: sleep infinity
     stop_grace_period: 2s
@@ -18,7 +20,6 @@ services:
     image: postgres:14.3
     ports:
       - "5432:5432"
-      - "5173:5173"
     volumes:
       - "../database/create.sql:/docker-entrypoint-initdb.d/init.sql"
     environment:
