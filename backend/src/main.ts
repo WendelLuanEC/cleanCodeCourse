@@ -1,3 +1,4 @@
+import cors from "cors";
 import crypto from "crypto";
 import express, { Request, Response } from "express";
 import pgp from "pg-promise";
@@ -5,8 +6,8 @@ import { validateCpf } from "./validateCpf";
 import { validateEmail } from "./validateEmail";
 import { validateName } from "./validateName";
 import { validatepassword } from "./validatePassword";
-
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 const connection = pgp()("postgres://postgres:123456@db:5432/app");
@@ -66,4 +67,4 @@ app.get("/accounts/:accountId", async (req: Request, res: Response) => {
     res.json(account);
 });
 
-app.listen(3000);
+
