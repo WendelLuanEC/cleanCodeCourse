@@ -5,10 +5,12 @@
   "license": "MIT",
   "dependencies": {
     "@types/cors": "^2.8.19",
+    "@types/sinon": "^21.0.0",
     "axios": "^1.13.4",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "pg-promise": "^12.3.0"
+    "pg-promise": "^12.3.0",
+    "sinon": "^21.0.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

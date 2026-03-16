@@ -7,6 +7,8 @@
     "compose:up": "docker compose -f docker/docker-compose.yaml up -d",
     "compose:down": "docker compose -f docker/docker-compose.yaml down -v",
     "compose:logs": "docker compose -f docker/docker-compose.yaml logs -f backend",
-    "compose:exec": "docker compose -f docker/docker-compose.yaml exec backend bash"
+    "compose:exec": "docker compose -f docker/docker-compose.yaml exec backend bash",
+    "compose:db:down": "docker compose -f docker/docker-compose.yaml -v down db",
+    "compose:db:up": "docker compose -f docker/docker-compose.yaml up db -d"
   }
 }

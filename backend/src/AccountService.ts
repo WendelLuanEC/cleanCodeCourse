@@ -17,6 +17,7 @@ export default class AccountService {
     if (!validateCpf(account.document)) throw new Error("Invalid document");
     if(!validatepassword(account.password)) throw new Error("Invalid password");
     await this.accountDAO.save({ ...account, accountId });
+    
 
     return { accountId: accountId };
 };
