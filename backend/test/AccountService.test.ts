@@ -1,20 +1,23 @@
-import axios from "axios";
+import { AccountDAOMemory } from "../src/AccountDAO";
+import AccountService from "../src/AccountService";
 
-axios.defaults.validateStatus = () => true;
+let accountService: AccountService;
+
+beforeEach(() => {
+    const accountDAO = new AccountDAOMemory();
+    accountService = new AccountService(accountDAO);
+});
 
 test("Deve criar uma conta", async () => {
+    
     const input = {
      name: "John Doe",
      email: "john.doe@gmail.com",
      document: "97456321558",
      password:  "12345678Ac"
     }
-
-    const responseSigunp = await axios.post("http://localhost:3000/signup", input);
-    const outputSigunp = responseSigunp.data;
-    const responseGetAccount = await axios.get(`http://localhost:3000/accounts/${outputSigunp.accountId}`);
-    const outputGetAccount = responseGetAccount.data;
-    console.log(outputGetAccount);
+    const outputSigunp = await accountService.signup(input);
+    const outputGetAccount = await accountService.getAccount(outputSigunp.accountId);
     expect(outputSigunp.accountId).toBeDefined();
     expect(outputGetAccount.name).toBe(input.name);
     expect(outputGetAccount.email).toBe(input.email);
@@ -30,10 +33,7 @@ test("Não deve criar uma conta se o nome for inválido", async () => {
      password:  "12345678"
     }
 
-    const responseSigunp = await axios.post("http://localhost:3000/signup", input);
-    expect(responseSigunp.status).toBe(422);
-    const outputSigunp = responseSigunp.data;
-    expect(outputSigunp.message).toBe("Invalid name");
+    await expect(() => accountService.signup(input)).rejects.toThrow(new Error("Invalid name"));
 });
 
 test("Não deve criar uma conta se o email for inválido", async () => {
@@ -44,10 +44,7 @@ test("Não deve criar uma conta se o email for inválido", async () => {
      password:  "12345678"
     }
 
-    const responseSigunp = await axios.post("http://localhost:3000/signup", input);
-    expect(responseSigunp.status).toBe(422);
-    const outputSigunp = responseSigunp.data;
-    expect(outputSigunp.message).toBe("Invalid email");
+    await expect(() => accountService.signup(input)).rejects.toThrow(new Error("Invalid email"));
 });
 
 test("Não deve criar uma conta se o document for inválido", async () => {
@@ -58,10 +55,7 @@ test("Não deve criar uma conta se o document for inválido", async () => {
      password:  "123456780"
     }
 
-    const responseSigunp = await axios.post("http://localhost:3000/signup", input);
-    expect(responseSigunp.status).toBe(422);
-    const outputSigunp = responseSigunp.data;
-    expect(outputSigunp.message).toBe("Invalid document");
+    await expect(() => accountService.signup(input)).rejects.toThrow(new Error("Invalid document"));
 });
 
 test("Não deve criar uma conta se o senha tiver menos de 8 caracteres", async () => {
@@ -72,8 +66,5 @@ test("Não deve criar uma conta se o senha tiver menos de 8 caracteres", async (
      password:  "12345"
     }
 
-    const responseSigunp = await axios.post("http://localhost:3000/signup", input);
-    expect(responseSigunp.status).toBe(422);
-    const outputSigunp = responseSigunp.data;
-    expect(outputSigunp.message).toBe("Invalid password");
+    await expect(() => accountService.signup(input)).rejects.toThrow(new Error("Invalid password"));
 });
