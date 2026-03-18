@@ -1,23 +1,28 @@
 import Sinon from "sinon";
+import { AccountAssetDAODatabase } from "../src/AccountAssetDAO";
 import { AccountDAODatabase, AccountDAOMemory } from "../src/AccountDAO";
 import AccountService from "../src/AccountService";
+import Registry from "../src/Registry";
 
 let accountService: AccountService;
 
 beforeEach(() => {
-    //const accountDAO = new AccountDAOMemory();
-    const accountDAO = new AccountDAODatabase();
-    accountService = new AccountService(accountDAO);
+    Registry.getInstance().provide("accountDAO", new AccountDAODatabase());
+    Registry.getInstance().provide("accountAssetDAO", new AccountAssetDAODatabase());
+    accountService = new AccountService();
+});
+
+afterEach(() => {
+    Sinon.restore();
 });
 
 test("Deve criar uma conta", async () => {
-    
     const input = {
-     name: "John Doe",
-     email: "john.doe@gmail.com",
-     document: "97456321558",
-     password:  "12345678Ac"
-    }
+        name: "John Doe",
+        email: "john.doe@gmail.com",
+        document: "97456321558",
+        password: "12345678Ac",
+    };
     const outputSigunp = await accountService.signup(input);
     const outputGetAccount = await accountService.getAccount(outputSigunp.accountId);
     expect(outputSigunp.accountId).toBeDefined();
@@ -29,58 +34,57 @@ test("Deve criar uma conta", async () => {
 
 test("Não deve criar uma conta se o nome for inválido", async () => {
     const input = {
-     name: "John ",
-     email: "john.doe@gmail.com",
-     document: "97456321558",
-     password:  "12345678"
-    }
+        name: "John ",
+        email: "john.doe@gmail.com",
+        document: "97456321558",
+        password: "12345678",
+    };
 
     await expect(() => accountService.signup(input)).rejects.toThrow(new Error("Invalid name"));
 });
 
 test("Não deve criar uma conta se o email for inválido", async () => {
     const input = {
-     name: "John Doe",
-     email: "john.doe@",
-     document: "97456321558",
-     password:  "12345678"
-    }
+        name: "John Doe",
+        email: "john.doe@",
+        document: "97456321558",
+        password: "12345678",
+    };
 
     await expect(() => accountService.signup(input)).rejects.toThrow(new Error("Invalid email"));
 });
 
 test("Não deve criar uma conta se o document for inválido", async () => {
     const input = {
-     name: "John Doe",
-     email: "john.doe@gmail.com",
-     document: "97456321",
-     password:  "123456780"
-    }
+        name: "John Doe",
+        email: "john.doe@gmail.com",
+        document: "97456321",
+        password: "123456780",
+    };
 
     await expect(() => accountService.signup(input)).rejects.toThrow(new Error("Invalid document"));
 });
 
 test("Não deve criar uma conta se o senha tiver menos de 8 caracteres", async () => {
     const input = {
-     name: "John Doe",
-     email: "john.doe@gmail.com",
-     document: "97456321558",
-     password:  "12345"
-    }
+        name: "John Doe",
+        email: "john.doe@gmail.com",
+        document: "97456321558",
+        password: "12345",
+    };
 
     await expect(() => accountService.signup(input)).rejects.toThrow(new Error("Invalid password"));
 });
 
-
 test("Deve criar uma conta com stub", async () => {
     //Quando o teste for executado, o método save do AccountDAODatabase irá retornar uma Promise resolvida, ou seja, ele não irá salvar nada no banco de dados, apenas irá simular o comportamento de salvar uma conta.
-    const saveStub =Sinon.stub(AccountDAODatabase.prototype, "save").resolves();
+    const saveStub = Sinon.stub(AccountDAODatabase.prototype, "save").resolves();
     const input = {
-     name: "John Doe",
-     email: "john.doe@gmail.com",
-     document: "97456321558",
-     password:  "12345678Ac"
-    }
+        name: "John Doe",
+        email: "john.doe@gmail.com",
+        document: "97456321558",
+        password: "12345678Ac",
+    };
 
     //Quando o teste for executado, o método getById do AccountDAODatabase irá retornar uma Promise resolvida com o input, ou seja, ele não irá buscar nada no banco de dados, apenas irá simular o comportamento de buscar uma conta pelo id.
     const getByIdStub = Sinon.stub(AccountDAODatabase.prototype, "getById").resolves(input);
@@ -102,13 +106,12 @@ test("Deve criar uma conta com spy", async () => {
     //Quando o teste for executado, o método getById do AccountDAODatabase irá ser monitorado, ou seja, ele irá buscar a conta no banco de dados, mas também irá registrar as chamadas feitas ao método, como por exemplo, quantas vezes ele foi chamado e com quais argumentos.
     const getByIdSpy = Sinon.spy(AccountDAODatabase.prototype, "getById");
 
-
     const input = {
-     name: "John Doe",
-     email: "john.doe@gmail.com",
-     document: "97456321558",
-     password:  "12345678Ac"
-    }
+        name: "John Doe",
+        email: "john.doe@gmail.com",
+        document: "97456321558",
+        password: "12345678Ac",
+    };
     const outputSigunp = await accountService.signup(input);
     const outputGetAccount = await accountService.getAccount(outputSigunp.accountId);
     expect(outputSigunp.accountId).toBeDefined();
@@ -131,9 +134,7 @@ test("Deve criar uma conta com spy", async () => {
     getByIdSpy.restore();
 });
 
-
-test.only("Deve criar uma conta com mock", async () => {
-    
+test("Deve criar uma conta com mock", async () => {
     //Quando o teste for executado, o método save do AccountDAODatabase irá ser simulado, ou seja, ele irá salvar a conta no banco de dados, mas também irá verificar se o método foi chamado com os argumentos corretos, como por exemplo, o input e o accountId gerado.
     const accountDAOMock = Sinon.mock(AccountDAODatabase.prototype);
 
@@ -141,14 +142,14 @@ test.only("Deve criar uma conta com mock", async () => {
     accountDAOMock.expects("save").once().resolves();
 
     const input = {
-     name: "John Doe",
-     email: "john.doe@gmail.com",
-     document: "97456321558",
-     password:  "12345678Ac"
-    }
+        name: "John Doe",
+        email: "john.doe@gmail.com",
+        document: "97456321558",
+        password: "12345678Ac",
+    };
 
     //Quando o teste for executado, o método getById do AccountDAODatabase irá retornar uma Promise resolvida com o input, ou seja, ele não irá buscar nada no banco de dados, apenas irá simular o comportamento de buscar uma conta pelo id.
-    accountDAOMock.expects("getById").onSecondCall().resolves(input);
+    accountDAOMock.expects("getById").once().resolves(input);
     const outputSigunp = await accountService.signup(input);
     const outputGetAccount = await accountService.getAccount(outputSigunp.accountId);
     expect(outputSigunp.accountId).toBeDefined();
@@ -158,22 +159,23 @@ test.only("Deve criar uma conta com mock", async () => {
     expect(outputGetAccount.password).toBe(input.password);
 
     //Verifica se o método save do AccountDAODatabase foi chamado com o input e o accountId gerado.
-    accountDAOMock.verify();  
-    
+    accountDAOMock.verify();
+
     //Restaura o comportamento original dos métodos, ou seja, eles irão voltar a salvar e buscar contas no banco de dados normalmente.
     accountDAOMock.restore();
 });
 
 test("Deve criar uma conta com fake", async () => {
     const accountDAO = new AccountDAOMemory();
-    accountService = new AccountService(accountDAO);
-    
+    Registry.getInstance().provide("accountDAO", accountDAO);
+    accountService = new AccountService();
+
     const input = {
-     name: "John Doe",
-     email: "john.doe@gmail.com",
-     document: "97456321558",
-     password:  "12345678Ac"
-    }
+        name: "John Doe",
+        email: "john.doe@gmail.com",
+        document: "97456321558",
+        password: "12345678Ac",
+    };
     const outputSigunp = await accountService.signup(input);
     const outputGetAccount = await accountService.getAccount(outputSigunp.accountId);
     expect(outputSigunp.accountId).toBeDefined();
@@ -181,4 +183,85 @@ test("Deve criar uma conta com fake", async () => {
     expect(outputGetAccount.email).toBe(input.email);
     expect(outputGetAccount.document).toBe(input.document);
     expect(outputGetAccount.password).toBe(input.password);
+});
+
+test("Deve depositar em uma conta", async () => {
+    const input = {
+        name: "John Doe",
+        email: "john.doe@gmail.com",
+        document: "97456321558",
+        password: "12345678Ac",
+    };
+    const outputSigunp = await accountService.signup(input);
+    const inputDeposit = {
+        accountId: outputSigunp.accountId,
+        assetId: "USD",
+        quantity: 1000,
+    };
+    await accountService.deposit(inputDeposit);
+    const outputGetAccount = await accountService.getAccount(outputSigunp.accountId);
+    expect(outputGetAccount.balances[0].assetId).toBe("USD");
+    expect(outputGetAccount.balances[0].quantity).toBe("1000");
+});
+
+test("Não deve depositar em uma conta que não existe", async () => {
+    const inputDeposit = {
+        accountId: crypto.randomUUID(),
+        assetId: "USD",
+        quantity: 1000,
+    };
+    await expect(accountService.deposit(inputDeposit)).rejects.toThrow("Account not found");
+});
+
+test("Deve sacar em uma conta", async () => {
+    const input = {
+        name: "John Doe",
+        email: "john.doe@gmail.com",
+        document: "97456321558",
+        password: "12345678Ac",
+    };
+
+    const outputSigunp = await accountService.signup(input);
+    const inputDeposit = {
+        accountId: outputSigunp.accountId,
+        assetId: "USD",
+        quantity: 1000,
+    };
+    await accountService.deposit(inputDeposit);
+
+    const inputWithdraw = {
+        accountId: outputSigunp.accountId,
+        assetId: "USD",
+        quantity: 500,
+    };
+
+    await accountService.withDraw(inputWithdraw);
+    const outputGetAccount = await accountService.getAccount(outputSigunp.accountId);
+    expect(outputGetAccount.balances[0].assetId).toBe("USD");
+    expect(outputGetAccount.balances[0].quantity).toBe("500");
+});
+
+test("Não deve sacar em uma conta se não tiver saldo suficiente", async () => {
+    const input = {
+        name: "John Doe",
+        email: "john.doe@gmail.com",
+        document: "97456321558",
+        password: "12345678Ac",
+    };
+
+    const outputSigunp = await accountService.signup(input);
+    const inputDeposit = {
+        accountId: outputSigunp.accountId,
+        assetId: "USD",
+        quantity: 1000,
+    };
+    await accountService.deposit(inputDeposit);
+
+    const inputWithdraw = {
+        accountId: outputSigunp.accountId,
+        assetId: "USD",
+        quantity: 2000,
+    };
+
+    await expect(accountService.withDraw(inputWithdraw)).rejects.toThrow("Insufficient balance");
 });
