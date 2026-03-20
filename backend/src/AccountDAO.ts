@@ -1,27 +1,30 @@
-import pgp from "pg-promise";
+import DatabaseConnection from "./DatabaseConnection";
+import { inject } from "./Registry";
 
+// Porta de Interface Adapter
 export default interface AccountDAO {
     save(account: any): Promise<void>;
     getById(accountId: string): Promise<any>;
 }
 
+
+//Interface Adapter - Implementação do adapter
 export class AccountDAODatabase implements AccountDAO {
+    @inject("databaseConnection")
+    connection!: DatabaseConnection;
+
     async save(account: any): Promise<void> {
-        const connection = pgp()("postgres://postgres:123456@db:5432/app");
-        await connection.query(
+        await this.connection.query(
             "INSERT INTO ccca.account(account_id, name, email, document, password) VALUES($1, $2, $3, $4, $5)",
             [account.accountId, account.name, account.email, account.document, account.password]
         );
-        await connection.$pool.end();
     }
 
     async getById(accountId: string): Promise<any> {
-        const connection = pgp()("postgres://postgres:123456@db:5432/app");
-        const [account] = await connection.query(
+        const [account] = await this.connection.query(
             "SELECT * FROM ccca.account WHERE account_id = $1",
             [accountId]
         );
-        await connection.$pool.end();
         return account;
     }
 }

@@ -1,36 +1,23 @@
-import cors from "cors";
-import express, { Request, Response } from "express";
 import { AccountAssetDAODatabase } from "./AccountAssetDAO";
+import AccountController from "./AccountController";
 import { AccountDAODatabase } from "./AccountDAO";
 import AccountService from "./AccountService";
+import { PgPromiseAdapter } from "./DatabaseConnection";
+import { ExpressAdapter } from "./HttpServer";
 import Registry from "./Registry";
-const app = express();
 
-app.use(cors());
-app.use(express.json());
 
-Registry.getInstance().provide("accountDAO", new AccountDAODatabase());
-Registry.getInstance().provide("accountAssetDAO", new AccountAssetDAODatabase());
-const accountService = new AccountService();
+// entrypoint
+async function main () {
+    const httpServer = new ExpressAdapter();
+    Registry.getInstance().provide("databaseConnection", new PgPromiseAdapter())
+    Registry.getInstance().provide("accountDAO", new AccountDAODatabase());
+    Registry.getInstance().provide("accountAssetDAO", new AccountAssetDAODatabase());
+    Registry.getInstance().provide("accountService", new AccountService());
+    Registry.getInstance().provide("httpServer", httpServer)
+    new AccountController();
+    
+    httpServer.listen(3000);
+}
 
-app.post("/signup", async (req: Request, res: Response) => {
-    const account = req.body;
-    try {
-        const output = await accountService.signup(account);
-        res.json(output);
-    } catch (e: any) {
-        res.status(422).json({
-            message: e.message,
-        });
-    }
-});
-
-app.get("/accounts/:accountId", async (req: Request, res: Response) => {
-    const accountId = req.params.accountId as string;
-    const output = await accountService.getAccount(accountId);
-    res.json(output);
-});
-
-app.listen(3000, () => {
-    console.log("Server listening on http://localhost:3000");
-});
+main();

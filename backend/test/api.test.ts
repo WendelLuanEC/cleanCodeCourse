@@ -11,10 +11,13 @@ test("Deve criar uma conta", async () => {
     };
 
     const responseSigunp = await axios.post("http://localhost:3000/signup", input);
+
     const outputSigunp = responseSigunp.data;
+    const accountId = outputSigunp.accountId;
     const responseGetAccount = await axios.get(
-        `http://localhost:3000/accounts/${outputSigunp.accountId}`
+        `http://localhost:3000/accounts/${accountId}`
     );
+
     const outputGetAccount = responseGetAccount.data;
     expect(outputSigunp.accountId).toBeDefined();
     expect(outputGetAccount.name).toBe(input.name);

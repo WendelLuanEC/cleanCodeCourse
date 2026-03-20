@@ -2,18 +2,22 @@ import Sinon from "sinon";
 import { AccountAssetDAODatabase } from "../src/AccountAssetDAO";
 import { AccountDAODatabase, AccountDAOMemory } from "../src/AccountDAO";
 import AccountService from "../src/AccountService";
+import DatabaseConnection, { PgPromiseAdapter } from "../src/DatabaseConnection";
 import Registry from "../src/Registry";
 
 let accountService: AccountService;
+let connection: DatabaseConnection;
 
 beforeEach(() => {
+    connection = new PgPromiseAdapter();
+    Registry.getInstance().provide("databaseConnection", connection)
     Registry.getInstance().provide("accountDAO", new AccountDAODatabase());
     Registry.getInstance().provide("accountAssetDAO", new AccountAssetDAODatabase());
     accountService = new AccountService();
 });
 
-afterEach(() => {
-    Sinon.restore();
+afterEach(async () => {
+    await connection.close()
 });
 
 test("Deve criar uma conta", async () => {
